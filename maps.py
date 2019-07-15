@@ -23,6 +23,11 @@ class Map:
             to_mapno = door['to_mapno']
             self.doors.append(Door(yposd, xposd, status, to_chapter, to_mapno))
             self.scr.addstr(yposd + ypos, xposd + xpos, 'D')
+
+class Floor:
+    def __init__(self, ypos, xpos):
+        self.ypos = ypos
+        self.xpos = xpos
             
 class Door:
     def __init__(self, ypos, xpos, status, to_chapter, to_mapno):

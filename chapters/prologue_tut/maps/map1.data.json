@@ -6,13 +6,6 @@
             "status" : "locked",
             "to_chapter" : "prologue_tut",
             "to_mapno" : 2
-        }, 
-        {
-            "xpos" : 0,
-            "ypos" : 3,
-            "status" : "locked",
-            "to_chapter" : "prologue_tut",
-            "to_mapno" : 3
         }
     ]
 }
