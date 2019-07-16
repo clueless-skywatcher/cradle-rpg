@@ -1,4 +1,5 @@
 from maps import *
+import pprint
 
 def printgamemenu(scr):
     scr.addstr(8, 0, '''
@@ -13,6 +14,8 @@ def printgamemenu(scr):
     3) <In development>
     
     Press 'q' to quit the game anytime.
+    Press 'r' to clear the bottom message panel.
+    Press 'TAB' to view your status.
 
     =======================================================================    
     ''')
@@ -33,21 +36,31 @@ def inferObjectFromChar(scr, char):
 def handleInput(scr, ch, player):
     xpos = player.xpos
     ypos = player.ypos
+    symbol = player.symbol
     if ch == ord('w') or ch == ord('W'):
-        ypos = ypos - 1
+        symbol = '^'
+        ypos = ypos - 1        
     elif ch == ord('a') or ch == ord('A'):
-        xpos = xpos - 1
+        symbol = '<'
+        xpos = xpos - 1        
     elif ch == ord('s') or ch == ord('S'):
-        ypos = ypos + 1
+        symbol = 'v'
+        ypos = ypos + 1        
     elif ch == ord('d') or ch == ord('D'):
-        xpos = xpos + 1
-    elif ch == ord('f') or ch == ord('F'):
+        symbol = '>'
+        xpos = xpos + 1        
+    if ch == ord('f') or ch == ord('F'):
         player.interact()
+    if ch == ord('r') or ch == ord('R'):
+        clearmessagepanel(scr)
 
-    player.move(ypos, xpos)
+    if ch == ord('\t'):
+        showmessage(scr, str(player.__dict__))
 
-def donothing():
-    pass
+    player.move(ypos, xpos, symbol)
+
+def donothing(scr):
+    clearmessagepanel(scr)
 
 def yesnochoice(scr, string, yes, no, yesargs = tuple(), noargs = tuple()):
     showmessage(scr, string)
@@ -55,8 +68,59 @@ def yesnochoice(scr, string, yes, no, yesargs = tuple(), noargs = tuple()):
     while True:
         ch = scr.getch()
         if ch == ord('y') or ch == ord('Y'):
+            scr.move(32, 0)
+            scr.clrtoeol()
             yes(*yesargs)
             break
         elif ch == ord('n') or ch == ord('N'):
+            scr.move(32, 0)
+            scr.clrtoeol()
             no(*noargs)
             break
+
+def clearmessagepanel(scr):
+    scr.move(31, 0)
+    scr.clrtobot()
+
+def process_map_meta(meta):
+    orig_meta = meta
+    width = meta['width'] - 1
+    height = meta['height'] - 1
+    doors = meta['doors']
+    for door in doors:
+        if door['xpos'] == 'left':
+            door['xpos'] = 0
+        elif door['xpos'] == 'right':
+            door['xpos'] = width
+
+        if door['ypos'] == 'top':
+            door['ypos'] = 0
+        elif door['ypos'] == 'bottom':
+            door['ypos'] = height
+    return meta, orig_meta
+
+if __name__ == "__main__":
+    pprint.pprint(process_map_meta({
+    "width" : 57,
+    "height" : 6,
+    "doors" : [
+        {
+            "xpos" : 18,
+            "ypos" : "bottom",
+            "status" : "not-locked",
+            "to_chapter" : "prologue_tut",
+            "to_mapno" : 1,
+            "spawn_next_xpos" : 19,
+            "spawn_next_ypos" : 0
+        },
+        {
+            "xpos" : "right",
+            "ypos" : 3,
+            "status" : "locked",
+            "to_chapter" : "prologue_tut",
+            "to_mapno" : 4,
+            "spawn_next_xpos" : 0,
+            "spawn_next_ypos" : 1
+        }
+    ]
+})[0])

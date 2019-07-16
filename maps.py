@@ -1,37 +1,68 @@
 import curses
-
-import curses
 import json
 
-from utils import showmessage
+from utils import showmessage, process_map_meta
 
+RENDER_XPOS = 5
+RENDER_YPOS = 5
 IMPASSABLE_OBJECTS = list(map(ord, ['|', '-', 'I', 'D']))        
 
 class Map:
-    def __init__(self, chapter, mapno, scr):
+    def __init__(self, chapter, mapno, player, scr, ypos = RENDER_YPOS, xpos = RENDER_XPOS):
         self.chapter = chapter
         self.mapno = mapno
         self.scr = scr
         self.doors = {}
+        self.ypos = ypos
+        self.xpos = xpos
+        self.meta = {}
+        self.player = player
 
-    def render(self, ypos, xpos):
+    def render(self):
+        self.scr.clear()
         map_ = load_map(self.chapter, self.mapno)
         meta = load_metadata(self.chapter, self.mapno)
+        
+        self.meta, orig_meta = process_map_meta(meta)            
         for i in range(len(map_)):
-            self.scr.addstr(ypos + i, xpos, map_[i])
-        for door in meta['doors']:
+            self.scr.addstr(self.ypos + i, self.xpos, map_[i])
+        
+        self.renderplayer(self.player.ypos, self.player.ypos)        
+        self.renderdoors()
+        self.renderitems()
+        self.player.currmap = self
+        
+    def renderplayer(self, ypos, xpos):
+        self.player.place(ypos, xpos, self.player.symbol)        
+    
+    def renderdoors(self):
+        for door in self.meta['doors']:
             doordata = {}
             doordata['xposd'] = door['xpos']
             doordata['yposd'] = door['ypos']
             doordata['status'] = door['status']
             doordata['to_chapter'] = door['to_chapter']
             doordata['to_mapno'] = door['to_mapno']
-            self.scr.addstr(doordata['yposd'] + ypos, doordata['xposd'] + xpos, 'D')
+            doordata['spawn_next_xpos'] = door['spawn_next_xpos']
+            doordata['spawn_next_ypos'] = door['spawn_next_ypos']
+            self.scr.addstr(doordata['yposd'] + self.ypos, doordata['xposd'] + self.xpos, 'D')
             self.doors['({}, {})'.format(doordata['yposd'], doordata['xposd'])] = doordata
-        showmessage(self.scr, str(self.doors))
 
+    def renderitems(self):
+        pass
+        
     def opendoor(self, ypos, xpos):
-        showmessage(self.scr, str(self.doors))
+        door = self.doors['({}, {})'.format(ypos - RENDER_YPOS, xpos - RENDER_XPOS)]
+        status = door['status']
+        if status == 'locked':
+            showmessage(self.scr, "This door is locked.")
+            return
+        else:
+            self.mapno = door['to_mapno']
+            axpos = door['spawn_next_xpos']
+            aypos = door['spawn_next_ypos']
+            self.player.move(aypos, axpos, self.player.symbol)
+            self.render()
         
 class Floor:
     def __init__(self, scr, ypos, xpos):

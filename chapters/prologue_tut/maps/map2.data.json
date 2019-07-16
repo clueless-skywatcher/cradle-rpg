@@ -1,0 +1,24 @@
+{
+    "width" : 57,
+    "height" : 6,
+    "doors" : [
+        {
+            "xpos" : 18,
+            "ypos" : "bottom",
+            "status" : "not-locked",
+            "to_chapter" : "prologue_tut",
+            "to_mapno" : 1,
+            "spawn_next_xpos" : 25,
+            "spawn_next_ypos" : 6
+        },
+        {
+            "xpos" : "right",
+            "ypos" : 3,
+            "status" : "locked",
+            "to_chapter" : "prologue_tut",
+            "to_mapno" : 4,
+            "spawn_next_xpos" : 0,
+            "spawn_next_ypos" : 1
+        }
+    ]
+}

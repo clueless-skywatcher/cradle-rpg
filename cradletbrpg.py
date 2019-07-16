@@ -45,10 +45,9 @@ def initgame(scr):
     scr.clear()
     curses.curs_set(0)
     curses.noecho()    
-    map_ = Map('prologue_tut', 1, scr = scr)
-    map_.render(5, 5)
-    player = Player(91, 60, 54, 54, 13, 13, scr = scr, currmap = map_)
-    player.move(player.ypos, player.xpos)    
+    player = Player(91, 60, 54, 54, 13, 13, scr = scr)
+    map_ = Map('prologue_tut', 1, player, scr = scr)
+    map_.render()
     while True:
         ch = scr.getch()  
         if ch == ord('q') or ch == ord('Q'):
