@@ -3,12 +3,16 @@ import curses
 import curses
 import json
 
+from utils import showmessage
+
+IMPASSABLE_OBJECTS = list(map(ord, ['|', '-', 'I', 'D']))        
+
 class Map:
     def __init__(self, chapter, mapno, scr):
         self.chapter = chapter
         self.mapno = mapno
         self.scr = scr
-        self.doors = []
+        self.doors = {}
 
     def render(self, ypos, xpos):
         map_ = load_map(self.chapter, self.mapno)
@@ -16,26 +20,34 @@ class Map:
         for i in range(len(map_)):
             self.scr.addstr(ypos + i, xpos, map_[i])
         for door in meta['doors']:
-            xposd = door['xpos']
-            yposd = door['ypos']
-            status = door['status']
-            to_chapter = door['to_chapter']
-            to_mapno = door['to_mapno']
-            self.doors.append(Door(yposd, xposd, status, to_chapter, to_mapno))
-            self.scr.addstr(yposd + ypos, xposd + xpos, 'D')
+            doordata = {}
+            doordata['xposd'] = door['xpos']
+            doordata['yposd'] = door['ypos']
+            doordata['status'] = door['status']
+            doordata['to_chapter'] = door['to_chapter']
+            doordata['to_mapno'] = door['to_mapno']
+            self.scr.addstr(doordata['yposd'] + ypos, doordata['xposd'] + xpos, 'D')
+            self.doors['({}, {})'.format(doordata['yposd'], doordata['xposd'])] = doordata
+        showmessage(self.scr, str(self.doors))
 
+    def opendoor(self, ypos, xpos):
+        showmessage(self.scr, str(self.doors))
+        
 class Floor:
-    def __init__(self, ypos, xpos):
+    def __init__(self, scr, ypos, xpos):
         self.ypos = ypos
         self.xpos = xpos
+        self.scr = scr
             
 class Door:
-    def __init__(self, ypos, xpos, status, to_chapter, to_mapno):
+    def __init__(self, ypos, xpos, status, to_chapter, to_mapno, scr, currmap):
         self.ypos = ypos
         self.xpos = xpos
         self.status = status
         self.to_chapter = to_chapter
-        self.to_mapno = to_mapno      
+        self.to_mapno = to_mapno  
+        self.scr = scr
+        self.currmap = currmap  
 
 def load_metadata(chapter, mapno):
     file = open('chapters/{}/maps/map{}.data.json'.format(chapter, mapno))

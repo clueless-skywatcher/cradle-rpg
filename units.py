@@ -1,5 +1,7 @@
 import curses
 from utils import *
+import time
+from maps import *
 
 class BeingBattleObject:
     def __init__(self, baselv, hp, mp, attack, defense):
@@ -13,7 +15,7 @@ class BeingBattleObject:
         pass
 
 class Player:
-    def __init__(self, hp, mp, attack, defense, ypos, xpos, scr, symbol = 'P'):
+    def __init__(self, hp, mp, attack, defense, ypos, xpos, scr, currmap, symbol = 'P'):
         self.hp = hp
         self.mp = mp
         self.attack = attack
@@ -23,6 +25,7 @@ class Player:
         self.level = 1
         self.symbol = symbol
         self.scr = scr
+        self.currmap = currmap
     
     def move(self, ypos, xpos):        
         if self.can_move(ypos, xpos) == False:
@@ -30,14 +33,13 @@ class Player:
         self.scr.addstr(self.ypos, self.xpos, '.')
         self.xpos = xpos
         self.ypos = ypos
-        self.scr.addstr(0, 0, "({}, {})".format(self.xpos, self.ypos))
+        self.scr.addstr(30, 0, "({}, {})".format(self.xpos, self.ypos))
         self.scr.addstr(self.ypos, self.xpos, self.symbol)        
         self.scr.move(ypos, xpos)
     
     def can_move(self, ypos, xpos):
         char = self.scr.inch(ypos, xpos)
-        impassable = list(map(ord, ['|', '-', 'D', 'I']))
-        if char in impassable:
+        if char in IMPASSABLE_OBJECTS:
             return False
         else:
             return True
@@ -45,23 +47,22 @@ class Player:
     def getyx(self):
         return self.ypos, self.xpos
 
-    def near(self, obj):
-        y, x = self.getyx()
-        if inferObjectFromChar(self.scr, self.scr.inch(y - 1, x)) == obj:
-            self.scr.addstr(0, 0, "You are near a {}".format(obj))
-            return True
-
-    def interact(self, obj):
-        if self.near(obj):
-            self.scr.refresh()
-            self.scr.addstr(1, 0, "Interacting with {}".format(obj))
+    def interact(self):
+        y, x = self.ypos, self.xpos
+        top = self.scr.inch(y - 1, x)
+        bottom = self.scr.inch(y + 1, x)
+        left = self.scr.inch(y, x - 1)
+        right = self.scr.inch(y, x + 1)
+        if top == bottom == left == right == ord('.'):
+            showmessage(self.scr, "There's nothing to interact with")
+        elif top == ord('D'):
+            yesnochoice(self.scr, "You see a door", yes = self.currmap.opendoor, no = donothing, yesargs = (y - 1, x))
         else:
-            self.scr.refresh()
-            self.scr.addstr(1, 0, "Nothing to interact with {}".format(obj.__class__.__name__))
+            showmessage(self.scr, "There's something interesting near you")
 
     def attack(self, being):
         pass
-
+ 
     def recruit(self, being):
         pass
 

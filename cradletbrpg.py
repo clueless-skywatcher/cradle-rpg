@@ -47,7 +47,7 @@ def initgame(scr):
     curses.noecho()    
     map_ = Map('prologue_tut', 1, scr = scr)
     map_.render(5, 5)
-    player = Player(91, 60, 54, 54, 13, 13, scr = scr)
+    player = Player(91, 60, 54, 54, 13, 13, scr = scr, currmap = map_)
     player.move(player.ypos, player.xpos)    
     while True:
         ch = scr.getch()  
@@ -57,8 +57,6 @@ def initgame(scr):
             curses.wrapper(initmenu)
             break
         handleInput(scr, ch, player)
-        
-
 
 curses.wrapper(initmenu)
 

@@ -18,7 +18,9 @@ def printgamemenu(scr):
     ''')
 
 def showmessage(scr, msg):
-    scr.addstr(50, 0)
+    scr.move(31, 0)
+    scr.clrtoeol()
+    scr.addstr(31, 0, msg)
 
 def inferObjectFromChar(scr, char):
     obj = None
@@ -26,6 +28,7 @@ def inferObjectFromChar(scr, char):
         obj = Door
     if obj != None:
         scr.addstr(0, 0, obj)
+    return obj
 
 def handleInput(scr, ch, player):
     xpos = player.xpos
@@ -38,7 +41,22 @@ def handleInput(scr, ch, player):
         ypos = ypos + 1
     elif ch == ord('d') or ch == ord('D'):
         xpos = xpos + 1
-    elif ch == ord(' '):
-        player.interact(Door)
-    
+    elif ch == ord('f') or ch == ord('F'):
+        player.interact()
+
     player.move(ypos, xpos)
+
+def donothing():
+    pass
+
+def yesnochoice(scr, string, yes, no, yesargs = tuple(), noargs = tuple()):
+    showmessage(scr, string)
+    scr.addstr(32, 0, "Press 'y' for Yes, 'n' for No")
+    while True:
+        ch = scr.getch()
+        if ch == ord('y') or ch == ord('Y'):
+            yes(*yesargs)
+            break
+        elif ch == ord('n') or ch == ord('N'):
+            no(*noargs)
+            break
